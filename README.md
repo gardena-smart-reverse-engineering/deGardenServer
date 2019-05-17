@@ -1,2 +1,2 @@
 # deGardenServer
-Local Gardena SeluxitCloud Replacement 
+Local Gardena Seluxit Cloud Replacement 
