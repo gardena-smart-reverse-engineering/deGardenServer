@@ -26,7 +26,6 @@ def main():
     print 'started, waiting for clients...'
 
     while True:
-
         c, addr = reportSocket.accept()
         thread.start_new_thread(ReportServerHandler(c,addr).loop())
 
