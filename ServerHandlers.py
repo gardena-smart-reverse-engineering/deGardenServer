@@ -3,6 +3,7 @@ import struct
 import json
 
 from abc import ABC, abstractmethod
+from fs.memoryfs import MemoryFS
 
 import xml.etree.ElementTree as et
 
@@ -130,7 +131,7 @@ class ControlServerHandler(BaseServerHandler):
         pass
         
 class ReportServerHandler(BaseServerHandler):
-    database = {}
+    memoryfs = MemoryFS()
 
     def _name(self):
         return "Report"
@@ -138,16 +139,23 @@ class ReportServerHandler(BaseServerHandler):
     def _handle_json_request(self, data):
         if data["method"] == "PING":
             response = self.__get_result(data["id"], "PONG") 
-        elif data["method"] == "GET":
-            pass
-        elif data["method"] == "POST":
-            pass
-        elif data["method"] == "PUT":
-            pass
-        elif data["method"] == "DELETE":
-            pass
-           
-        response = self.__get_simple_result(data["id"])     
+        else:
+            if data["method"] == "GET":
+                pass
+            elif data["method"] == "POST":
+                self.memoryfs.makedirs(path=data["params"]["url"], recreate=True)
+                self.memoryfs.writetext(path=data["params"]["url"]+"/data.xml", contents=data["params"]["data"])
+                self.memoryfs.tree()
+                pass
+            elif data["method"] == "PUT":
+                self.memoryfs.makedirs(path=data["params"]["url"], recreate=True)
+                self.memoryfs.writetext(path=data["params"]["url"]+"/data.xml", contents=data["params"]["data"])
+                self.memoryfs.tree()
+                pass
+            elif data["method"] == "DELETE":
+                pass
+            response = self.__get_simple_result(data["id"])    
+            
         self._send_json(response)
 
     def __get_result(self, id, result):
