@@ -26,11 +26,13 @@ def main():
     print('started, waiting for clients...')
 
     while True:
+        print('waiting for report socket')
         c, addr = reportSocket.accept()
-        _thread.start_new_thread(ReportServerHandler(c,addr).loop())
+        _thread.start_new_thread(ReportServerHandler(c,addr).loop)
 
+        print('waiting for control socket')
         c, addr = controlSocket.accept()
-        _thread.start_new_thread(ControlServerHandler(c,addr).loop())
+        _thread.start_new_thread(ControlServerHandler(c,addr).loop)
     reportSocket.close()
     controlSocket.close()
 
