@@ -1,7 +1,7 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import socket
-import thread
+import _thread
 
 import config
 import constants
@@ -10,9 +10,9 @@ from ServerHandlers import ReportServerHandler, ControlServerHandler
 def main():
     HOST = socket.gethostname()
 
-    print 'Starting deGarden Server', constants.VERSION
-    print 'Report Port:\t', config.REPORT_PORT
-    print 'Control Port:\t', config.CONTROL_PORT
+    print('Starting deGarden Server', constants.VERSION)
+    print('Report Port:\t', config.REPORT_PORT)
+    print('Control Port:\t', config.CONTROL_PORT)
 
     reportSocket = socket.socket()
     controlSocket = socket.socket()
@@ -23,18 +23,18 @@ def main():
     reportSocket.listen(5) #Max 5 clients
     controlSocket.listen(5) #Max 5 clients
 
-    print 'started, waiting for clients...'
+    print('started, waiting for clients...')
 
     while True:
         c, addr = reportSocket.accept()
-        thread.start_new_thread(ReportServerHandler(c,addr).loop())
+        _thread.start_new_thread(ReportServerHandler(c,addr).loop())
 
         c, addr = controlSocket.accept()
-        thread.start_new_thread(ControlServerHandler(c,addr).loop())
+        _thread.start_new_thread(ControlServerHandler(c,addr).loop())
     reportSocket.close()
     controlSocket.close()
 
-    print 'server stopped, bye bye...'
+    print('server stopped, bye bye...')
 
 if __name__== "__main__":
   main()
