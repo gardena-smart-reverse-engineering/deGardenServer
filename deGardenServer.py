@@ -3,6 +3,8 @@
 import logging
 import socket
 import _thread
+#from fs.memoryfs import MemoryFS
+from fs import open_fs
 
 import config
 import constants
@@ -28,14 +30,16 @@ def main():
 
     logging.info('started, waiting for clients...')
 
+    fileSystem = open_fs('./deGardenServer/database/')
+
     while True:
         logging.debug('waiting for report socket')
         c, addr = reportSocket.accept()
-        _thread.start_new_thread(ReportServerHandler(c,addr).loop)
+        _thread.start_new_thread(ReportServerHandler(fileSystem,c,addr).loop)
 
         logging.debug('waiting for control socket')
         c, addr = controlSocket.accept()
-        _thread.start_new_thread(ControlServerHandler(c,addr).loop)
+        _thread.start_new_thread(ControlServerHandler(fileSystem,c,addr).loop)
     reportSocket.close()
     controlSocket.close()
 

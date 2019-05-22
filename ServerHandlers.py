@@ -3,9 +3,10 @@ import struct
 import json
 
 from abc import ABC, abstractmethod
-from fs.memoryfs import MemoryFS
+from uuid import UUID
+from fs import path
 
-import xml.etree.ElementTree as et
+import xml.etree.ElementTree as ET
 
 class BaseServerHandler(ABC):
     __BUFFER_SIZE = 8192
@@ -25,7 +26,8 @@ class BaseServerHandler(ABC):
     __REQUEST_SHORT_INIT = bytes.fromhex("010000")
     __REQUEST_LONG_INIT = bytes.fromhex("0100020000")
 
-    def __init__(self, client, address):
+    def __init__(self, fs, client, address):
+        self._fs = fs
         self.__client = client
         self.__address = address
 
@@ -123,6 +125,13 @@ class BaseServerHandler(ABC):
     def _send_json(self, dictonary):
         self._send_raw(json.dumps(dictonary, separators=(',', ':')))
 
+    def _is_uuid(self, uuid):
+        try:
+            uuid_obj = UUID(uuid, version=version)
+        except:
+            return False
+        return str(uuid_obj) == uuid
+
 class ControlServerHandler(BaseServerHandler):
     def _name(self):
         return "Control"
@@ -131,8 +140,6 @@ class ControlServerHandler(BaseServerHandler):
         pass
         
 class ReportServerHandler(BaseServerHandler):
-    memoryfs = MemoryFS()
-
     def _name(self):
         return "Report"
 
@@ -140,20 +147,26 @@ class ReportServerHandler(BaseServerHandler):
         if data["method"] == "PING":
             response = self.__get_result(data["id"], "PONG") 
         else:
-            if data["method"] == "GET":
-                pass
-            elif data["method"] == "POST":
-                self.memoryfs.makedirs(path=data["params"]["url"], recreate=True)
-                self.memoryfs.writetext(path=data["params"]["url"]+"/data.xml", contents=data["params"]["data"])
-                self.memoryfs.tree()
-                pass
-            elif data["method"] == "PUT":
-                self.memoryfs.makedirs(path=data["params"]["url"], recreate=True)
-                self.memoryfs.writetext(path=data["params"]["url"]+"/data.xml", contents=data["params"]["data"])
-                self.memoryfs.tree()
-                pass
-            elif data["method"] == "DELETE":
-                pass
+            urlPath = data["params"]["url"]
+            xmlData = data["params"]["data"]
+            if xmlData:
+                xmlDom = ET.fromstring(xmlData)
+                if data["method"] == "GET":
+                    pass
+                elif data["method"] == "POST":
+                    if not self._is_uuid(path.iteratepath(urlPath[-1])):
+                        id = xmlDom.attrib['id']
+                        urlPath = urlPath + "/" + id
+                        self._fs.makedirs(path=urlPath, recreate=True)
+                        self._fs.writetext(path=urlPath + "/data.xml", contents=xmlData)
+                    else:
+                        pass #error
+                elif data["method"] == "PUT":
+                    if self._is_uuid(path.iteratepath(urlPath[-1])):
+                        #self._fs.writetext(path=urlPath+"/data.xml", contents=xmlData)
+                        pass #error
+                elif data["method"] == "DELETE":
+                    pass
             response = self.__get_simple_result(data["id"])    
             
         self._send_json(response)
