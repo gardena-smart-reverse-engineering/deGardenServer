@@ -144,31 +144,22 @@ class ReportServerHandler(BaseServerHandler):
         return "Report"
 
     def _handle_json_request(self, data):
-        if data["method"] == "PING":
-            response = self.__get_result(data["id"], "PONG") 
+        id = data["id"]
+        method = data["method"]
+        urlPath = data["params"]["url"]
+        if method == "PING":
+            response = self.__get_result(id, "PONG") 
+        elif method == "GET":
+            xmlResponse = self.__json_get(urlPath)
+            response = self.__get_result(id, xmlResponse)
         else:
-            urlPath = data["params"]["url"]
             xmlData = data["params"]["data"]
+            response = self.__get_simple_result(id)  
             if xmlData:
-                xmlDom = ET.fromstring(xmlData)
-                if data["method"] == "GET":
-                    pass
-                elif data["method"] == "POST":
-                    if not self._is_uuid(path.iteratepath(urlPath[-1])):
-                        id = xmlDom.attrib['id']
-                        urlPath = urlPath + "/" + id
-                        self._fs.makedirs(path=urlPath, recreate=True)
-                        self._fs.writetext(path=urlPath + "/data.xml", contents=xmlData)
-                    else:
-                        pass #error
-                elif data["method"] == "PUT":
-                    if self._is_uuid(path.iteratepath(urlPath[-1])):
-                        #self._fs.writetext(path=urlPath+"/data.xml", contents=xmlData)
-                        pass #error
-                elif data["method"] == "DELETE":
-                    pass
-            response = self.__get_simple_result(data["id"])    
-            
+                if method == "POST":
+                    self.__json_post(urlPath, xmlData)
+                elif method == "PUT":
+                    self.__json_put(urlPath, xmlData)
         self._send_json(response)
 
     def __get_result(self, id, result):
@@ -179,3 +170,30 @@ class ReportServerHandler(BaseServerHandler):
         }
     def __get_simple_result(self, id):
         return self.__get_result(id, True)
+
+    def __json_get(self, urlPath):
+        if self.__ends_with_uuid(urlPath):
+            return self._fs.readtext(urlPath + "/data.xml")
+        else:
+            return False
+
+    def __json_post(self, urlPath, xmlData):
+        if not self.__ends_with_uuid(urlPath):
+            xmlDom = ET.fromstring(xmlData)
+            id = xmlDom.attrib['id']
+            urlPath = urlPath + "/" + id
+            self._fs.makedirs(path=urlPath, recreate=True)
+            self._fs.writetext(path=urlPath + "/data.xml", contents=xmlData)
+        else:
+            pass #error
+
+    def __json_put(self, urlPath, xmlData):
+        if self.__ends_with_uuid(urlPath):
+            xmlData = self.__json_get(urlPath)
+            pass
+            #self._fs.writetext(path=urlPath+"/data.xml", contents=xmlData)
+        else:
+            pass #error
+
+    def __ends_with_uuid(self, urlPath):
+        return self._is_uuid(path.iteratepath(urlPath[-1]))
