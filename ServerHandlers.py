@@ -1,5 +1,6 @@
 import logging
 import struct
+import socket
 import json
 
 from abc import ABC, abstractmethod
@@ -10,6 +11,7 @@ import xml.etree.ElementTree as ET
 
 class BaseServerHandler(ABC):
     __BUFFER_SIZE = 8192
+    __MAX_CLIENTS = 1
 
     __GATEWAY_HANDSHAKE_1 = bytes.fromhex("ff00000000000000257f")
     __SERVER_HANDSHAKE_1 = bytes.fromhex("ff00000000000000017f")
@@ -26,31 +28,39 @@ class BaseServerHandler(ABC):
     __REQUEST_SHORT_INIT = bytes.fromhex("010000")
     __REQUEST_LONG_INIT = bytes.fromhex("0100020000")
 
-    def __init__(self, fs, client, address):
+    def __init__(self, fs, port):
         self._fs = fs
-        self.__client = client
-        self.__address = address
 
         self.__messageBuffer = b''
         self.__messageTargetLength = 0
 
-        self.log= logging.getLogger(self.__class__.__name__)
-    
-    def loop(self):
-        self.log.info("Connection for %s established with %s %s", self._name(), self.__client.getpeername(), self.__client.getsockname())
-        while True:
-            message = b''
-            while True:
-                part = self.__client.recv(self.__BUFFER_SIZE)
-                message += part
-                if len(part) < self.__BUFFER_SIZE:
-                    break
+        self.log = logging.getLogger(self.__class__.__name__)
 
-            if len(message) > 0:
-                #print(self._name(), 'packet from', self.__address)
-                self.__handle_packet(message)
-        self.__client.close()
-        self.log.warning("Connection to %s lost", self._name())
+        self.__init_socket(port)
+    
+    def __init_socket(self, port):
+        self.log.info('Starting server on port:\t%i', port)
+        self._socket = socket.socket()
+        self._socket.bind((socket.gethostname(), port))
+        self._socket.listen(self.__MAX_CLIENTS)
+
+    def loop(self):
+        while True:
+            self.__client, self.__address = self._socket.accept()
+            self.log.info("Connection for %s established with %s %s", self._name(), self.__client.getpeername(), self.__client.getsockname())
+            while True:
+                message = b''
+                while True:
+                    part = self.__client.recv(self.__BUFFER_SIZE)
+                    message += part
+                    if len(part) < self.__BUFFER_SIZE:
+                        break
+                if len(message) > 0:
+                    self.__handle_packet(message)
+            self.__client.close()
+            self.log.warning("Connection to %s lost", self._name())
+        self._socket.close()
+        self.log.info('Server stopped, bye bye...')
 
     @abstractmethod
     def _name(self):
@@ -97,7 +107,6 @@ class BaseServerHandler(ABC):
                 self.log.warning(hex(ord(i)))
 
     def __handle_data(self, message, responseLength):
-        #print(json)
         if len(message) == responseLength:
             try:
                 dataSet = json.loads(message)
