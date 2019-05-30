@@ -3,6 +3,7 @@ from flask_uuid import FlaskUUID
 
 import json
 import uuid
+import datetime
 
 fileSys = None
 app = Flask(__name__)
@@ -53,7 +54,21 @@ def devices_list():
 
 @app.route('/v1/devices/<uuid:id>')
 def device():
-    pass
+    device = {
+        "id": id,
+        "name": "TODO",
+        "description": "TODO",
+        "category": "",
+        "configuration_synchronized": True,
+        "configuration_synchronized_v2": {
+            "value": True,
+            "timestamp": ""
+        },
+        "abilities": [],
+        "scheduled_events": [],
+        "settings": []
+    }
+    return device
 
 @app.route('/v1/locations')
 def locations_list():
