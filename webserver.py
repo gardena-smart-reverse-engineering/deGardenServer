@@ -2,19 +2,19 @@ from flask import Flask, request, jsonify
 from flask_uuid import FlaskUUID
 
 import json
-import uuid
 import datetime
+from deGardenaWebservice import deGardenaWebservice
 
-fileSys = None
+webservice = None
 app = Flask(__name__)
 
 def start(fileSystem):
-    global app, fileSys
+    global app, webservice
     
-    FlaskUUID(app)
+    webservice = deGardenaWebservice(fileSystem)
 
+    FlaskUUID(app)
     app.run(debug=True, use_reloader=False)
-    fileSys = fileSystem
 
 @app.route('/')
 def hello():
@@ -27,55 +27,27 @@ def auth_token():
     #json = request.get_json()
     #username = json.data.attributes.username
     #password = json.data.attributes.password
-
-    token = {
-        "data": {
-            "id": str(uuid.uuid4()),
-            "type": "token",
-            "attributes": {
-                "expires_in": 863999,
-                "refresh_token": str(uuid.uuid4()),
-                "provider": "husqvarna",
-                "user_id": str(uuid.uuid4()),
-                "scope": "iam:read iam:write"
-            }
-        }
-    }
-
-    return jsonify(token)
+ 
+    return jsonify(webservice.auth_token("", ""))
 
 @app.route('/v1/features')
-def features_list():
-    pass
-
-@app.route('/v1/devices')
-def devices_list():
+def features():
     pass
 
 @app.route('/v1/devices/<uuid:id>')
-def device():
-    device = {
-        "id": id,
-        "name": "TODO",
-        "description": "TODO",
-        "category": "",
-        "configuration_synchronized": True,
-        "configuration_synchronized_v2": {
-            "value": True,
-            "timestamp": ""
-        },
-        "abilities": [],
-        "scheduled_events": [],
-        "settings": []
-    }
-    return device
+def device(id):
+    return jsonify(webservice.device(id))
+
+@app.route('/v1/devices')
+def devices():
+    return jsonify(webservice.devices())
 
 @app.route('/v1/locations')
-def locations_list():
+def locations():
     pass
 
 @app.route('/v1/activations')
-def activations_list():
+def activations():
     pass
     
 
