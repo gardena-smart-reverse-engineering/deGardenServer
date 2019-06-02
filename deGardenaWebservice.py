@@ -1,5 +1,6 @@
 import uuid
 import xmltodict
+import ast
 
 class deGardenaWebservice:
     def __init__(self, fileSystem):
@@ -38,8 +39,7 @@ class deGardenaWebservice:
         token = { "sessions": {
                 "token": str(uuid.uuid4()),
                 "user_id": str(uuid.uuid4())
-            }
-        }
+        } }
         return token
 
     def location(self, locationId):
@@ -119,13 +119,12 @@ class deGardenaWebservice:
 
         for name, value in deviceXml.items():
             if name[0] != "@":
-                prop = {
-                    "id": deviceId, #hack
-                    "name": name,
-                    "value": value,
-                    "writeable": False,
-                    "supported_values": []
-                }
+                prop = self.__fill_property(
+                    deviceId,  #hack
+                    name,
+                    value,
+                    False
+                )
                 properties.append(prop)
         return properties
 
@@ -139,10 +138,17 @@ class deGardenaWebservice:
         return service
 
     def __fill_property(self, propertyId, name, value, writable):
+        #realVal = value
+        try:
+            value = ast.literal_eval(value) #convert number strings to ints/floats
+        except:
+            pass
+
         prop = {
                 "id": propertyId,
                 "name": name,
                 "value": value,
+                #"valueUntouched": realVal, #just for testing
                 "writeable": writable,
                 "supported_values": []
         }
@@ -152,10 +158,10 @@ class deGardenaWebservice:
         path = "/network/{}/device/{}/service/{}/".format(self.gatewayId, deviceId, propertyId)
         service = self.__getXmlDict(path + "data.xml")["service"]
 
-        valueId = self.fileSystem.listdir(path+"value/")[0]
+        valueId = self.fileSystem.listdir(path+"value/")[0] #May multiple values (type Report / Control)
         value = self.__getXmlDict(path+"value/"+valueId+"/data.xml")["value"]
 
-        prop = self.__fill_property(propertyId, service["name"], value["data"], "w" in service["permission"])
+        prop = self.__fill_property(propertyId, service["name"], value["data"], ("w" in service["permission"]))
         return prop
 
     def services(self, deviceId):    
