@@ -30,9 +30,20 @@ def auth_token():
  
     return jsonify(webservice.auth_token("", ""))
 
-@app.route('/v1/features')
-def features():
-    pass
+@app.route('/sg-1/sessions', methods=['POST'])
+def session():
+    #req#{"sessions": {"email": "max.mustermann@email.com","password": "PASSWORT"}}
+
+    #json = request.get_json()
+    #username = json.sessions.username
+    #password = json.sessions.password
+
+    return jsonify(webservice.session("", ""))
+
+@app.route('/v1/locations')
+@app.route('/sg-1/locations')
+def locations():
+    return jsonify(webservice.locations())
 
 @app.route('/v1/devices/<uuid:id>')
 def device(id):
@@ -42,8 +53,8 @@ def device(id):
 def devices():
     return jsonify(webservice.devices())
 
-@app.route('/v1/locations')
-def locations():
+@app.route('/v1/features')
+def features():
     pass
 
 @app.route('/v1/activations')
