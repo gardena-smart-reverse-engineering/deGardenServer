@@ -2,9 +2,12 @@ import uuid
 import xmltodict
 import ast
 
+from ServerHandlers import ControlServerHandler
+
 class deGardenaWebservice:
-    def __init__(self, fileSystem):
+    def __init__(self, fileSystem, controlServer):
         self.fileSystem = fileSystem
+        self.controlServer = controlServer
         self.gatewayId = self.__get_gatewayId()
     
     def __get_gatewayId(self):

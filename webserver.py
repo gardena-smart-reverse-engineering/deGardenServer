@@ -8,10 +8,10 @@ from deGardenaWebservice import deGardenaWebservice
 webservice = None
 app = Flask(__name__)
 
-def start(fileSystem):
+def start(fileSystem, controlServer):
     global app, webservice
     
-    webservice = deGardenaWebservice(fileSystem)
+    webservice = deGardenaWebservice(fileSystem, controlServer)
 
     FlaskUUID(app)
     app.run(debug=True, use_reloader=False)

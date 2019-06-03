@@ -22,7 +22,7 @@ def main():
 
     _thread.start_new_thread(reportServer.loop)
     _thread.start_new_thread(controlServer.loop)
-    webserver.start(fileSystem)
+    webserver.start(fileSystem, controlServer)
 
     while True:
         pass
