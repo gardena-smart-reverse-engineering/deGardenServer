@@ -9,6 +9,8 @@ from fs import path
 
 import xml.etree.ElementTree as ET
 
+import threading
+
 class BaseServerHandler(ABC):
     __BUFFER_SIZE = 8192
     __MAX_CLIENTS = 1
@@ -33,6 +35,8 @@ class BaseServerHandler(ABC):
 
         self.__messageBuffer = b''
         self.__messageTargetLength = 0
+
+        self.lock = threading.Lock()
 
         self.log = logging.getLogger(self.__class__.__name__)
 
@@ -129,7 +133,12 @@ class BaseServerHandler(ABC):
 
         self.log.debug("Response: %s", data)
         fullData = prefix + data.encode("UTF-8")
-        self.__client.sendall(fullData)
+
+        self.lock.acquire()
+        try:
+            self.__client.sendall(fullData)
+        finally:
+            self.lock.release()
 
     def _send_json(self, dictonary):
         self._send_raw(json.dumps(dictonary, separators=(',', ':')))
