@@ -14,7 +14,7 @@ def start(fileSystem, controlServer):
     webservice = deGardenaWebservice(fileSystem, controlServer)
 
     FlaskUUID(app)
-    app.run(debug=True, use_reloader=False)
+    app.run(debug=True, use_reloader=False, host="0.0.0.0")
 
 @app.route('/')
 def hello():

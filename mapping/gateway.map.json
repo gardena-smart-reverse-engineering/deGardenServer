@@ -1,0 +1,107 @@
+{
+    "ruleName": "Gateway",
+    "identifier": [{
+        "nativeName": "product",
+        "value": "1-Gateway"
+    }],
+    "map": [{
+        "type": "ability",
+        "name": "device_info",
+        "gatewayXml": [
+            {
+                "nativeName": "ethernet.ip",
+                "webPath": "ethernet_status.ip",
+                "rule": "emptyAsObject"
+            },
+            {
+                "nativeName": "ethernet.isConnected",
+                "webName": "ethernet_status.isconnected"
+            },
+            {
+                "nativeName": "ethernet.mac",
+                "webName": "ethernet_status.mac"
+            },
+            {
+                "nativeName": "wifi.ip",
+                "webPath": "wifi_status.ip",
+                "rule": "emptyAsObject"
+            },
+            {
+                "nativeName": "wifi.isConnected",
+                "webName": "wifi_status.isconnected"
+            },
+            {
+                "nativeName": "wifi.mac",
+                "webName": "wifi_status.mac"
+            },
+            {
+                "nativeName": "wifi.signal",
+                "webName": "wifi_status.signal"
+            },
+            {
+                "nativeName": "wifi.ssid",
+                "webName": "wifi_status.ssid",
+                "rule": "emptyAsObject"
+            },
+            {
+                "nativeName": "version",
+                "webName": "version"
+            }
+        ],
+        "dataXml": [
+            {
+                "nativeName": "manufacturer",
+                "webName": "manufacturer"
+            }, {
+                "nativeName": "product",
+                "webName": "product",
+                "rule": "uppercase"
+            }, {
+                "nativeName": "serial",
+                "webName": "serial_number",
+                "rule": "override",
+                "ruleAttributes": [
+                    {
+                        "value": "N/A"
+                    }
+                ]
+            }, {
+                "nativeName": null,
+                "webName": "sgtin",
+                "rule": "override",
+                "ruleAttributes": [
+                    {
+                        "value": "N/A"
+                    }
+                ]
+            }, {
+                "nativeName": null,
+                "webName": "connection_status",
+                "rule": "override",
+                "ruleAttributes": [
+                    {
+                        "value": "unknown"
+                    }
+                ]
+            }, {
+                "nativeName": null,
+                "webName": "category",
+                "rule": "override",
+                "ruleAttributes": [
+                    {
+                        "value": "gateway"
+                    }
+                ]
+            }, {
+                "nativeName": null,
+                "webName": "last_time_online",
+                "rule": "override",
+                "ruleAttributes": [
+                    {
+                        "value": "N/A"
+                    }
+                ]
+            }
+        ]
+    }]
+}

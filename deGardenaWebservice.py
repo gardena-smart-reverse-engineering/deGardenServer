@@ -1,14 +1,17 @@
 import uuid
 import xmltodict
 import ast
+import json
 
 from ServerHandlers import ControlServerHandler
+from fs import open_fs
 
 class deGardenaWebservice:
     def __init__(self, fileSystem, controlServer):
         self.fileSystem = fileSystem
         self.controlServer = controlServer
         self.gatewayId = self.__get_gatewayId()
+        self.mapping = self.__readMapping()
     
     def __get_gatewayId(self):
         gatewayId = None
@@ -21,6 +24,17 @@ class deGardenaWebservice:
 
     def __getXmlDict(self, path):
         return xmltodict.parse(self.fileSystem.readtext(path))
+    
+    def __readMapping(self):
+        map = []
+        mapFs = open_fs('./deGardenServer/mapping/')
+        for map_file in mapFs.listdir("/"):
+            map_obj = open(map_file, 'r')
+            entry = json.load(map_obj)
+            map.append(entry)
+        return map
+
+            
 
 
     def auth_token(self, username, password):
